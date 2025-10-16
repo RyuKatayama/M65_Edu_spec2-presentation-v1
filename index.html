@@ -1,0 +1,1740 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPEC(2) 探求志向型学習システム仕様</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Meiryo', 'メイリオ', sans-serif;
+            background: #2c3e50;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        .presentation {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .slide {
+            width: 1122px;
+            min-height: 794px;
+            background: white;
+            margin: 20px auto;
+            padding: 40px 50px 100px 50px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            position: relative;
+            display: none;
+        }
+        
+        .slide.active {
+            display: block;
+        }
+        
+        .slide-header {
+            border-bottom: 4px solid #3498db;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .slide-title {
+            font-size: 32px;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+        
+        .slide-subtitle {
+            font-size: 18px;
+            color: #7f8c8d;
+            margin-top: 8px;
+        }
+        
+        .slide-number {
+            position: absolute;
+            bottom: 50px;
+            right: 30px;
+            font-size: 16px;
+            color: #95a5a6;
+        }
+        
+        .navigation {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(236,240,241,0.9) 30%, rgba(236,240,241,1) 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            padding: 10px;
+        }
+        
+        .nav-button {
+            padding: 10px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .nav-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        
+        .nav-button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        
+        .nav-button.prev {
+            background: #95a5a6;
+            color: white;
+        }
+        
+        .nav-button.prev:hover:not(:disabled) {
+            background: #7f8c8d;
+        }
+        
+        .nav-button.next {
+            background: #3498db;
+            color: white;
+        }
+        
+        .nav-button.next:hover:not(:disabled) {
+            background: #2980b9;
+        }
+        
+        .slide-indicator {
+            font-size: 14px;
+            color: #7f8c8d;
+            padding: 8px 16px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .content {
+            margin-bottom: 20px;
+        }
+        
+        .highlight-box {
+            background: #ebf5fb;
+            border-left: 5px solid #3498db;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 15px 0;
+        }
+        
+        .three-column {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .feature-box {
+            background: #f8f9fa;
+            border: 2px solid #3498db;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .feature-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #3498db;
+            margin-bottom: 10px;
+        }
+        
+        .feature-content {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #2c3e50;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        
+        th, td {
+            border: 1px solid #bdc3c7;
+            padding: 10px;
+            text-align: left;
+        }
+        
+        th {
+            background: #3498db;
+            color: white;
+            font-weight: bold;
+        }
+        
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        .architecture-diagram {
+            border: 2px solid #3498db;
+            border-radius: 8px;
+            padding: 15px;
+            background: #ebf5fb;
+            margin: 15px 0;
+        }
+        
+        .layer {
+            background: white;
+            border: 2px solid #3498db;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 8px 0;
+            text-align: center;
+        }
+        
+        .layer-title {
+            font-weight: bold;
+            color: #3498db;
+            margin-bottom: 6px;
+        }
+        
+        .title-slide {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            flex-direction: column;
+        }
+        
+        .title-slide .slide-title {
+            color: white;
+            font-size: 42px;
+            margin-bottom: 20px;
+        }
+        
+        .title-slide .slide-subtitle {
+            color: #ecf0f1;
+            font-size: 26px;
+        }
+        
+        ul {
+            list-style-position: inside;
+            padding-left: 15px;
+        }
+        
+        li {
+            margin: 8px 0;
+            line-height: 1.5;
+            font-size: 15px;
+        }
+        
+        .spec-badge {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        .comparison-table {
+            margin: 15px 0;
+        }
+        
+        .comparison-table td:first-child {
+            font-weight: bold;
+            background: #ecf0f1;
+        }
+        
+        .journey-step {
+            background: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        
+        .journey-step-title {
+            font-weight: bold;
+            color: #3498db;
+            margin-bottom: 8px;
+        }
+        
+        .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .metric-label {
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation">
+        <!-- スライド1: タイトル -->
+        <div class="slide active title-slide">
+            <div>
+                <h1 class="slide-title">SPEC(2)<br>探求志向型学習者向け<br>学習システム外部仕様</h1>
+                <p class="slide-subtitle">M⁶⁵理論による体系的要求開発の実践</p>
+                <p style="margin-top: 40px; font-size: 20px;">IEEE 42010 × 構造構成主義 × 生成AI</p>
+            </div>
+            <div class="slide-number">1 / 17</div>
+            <div class="navigation">
+                <button class="nav-button prev" onclick="previousSlide()" disabled>← 前へ</button>
+                <span class="slide-indicator"><span id="current-slide">1</span> / 17</span>
+                <button class="nav-button next" onclick="nextSlide()">次へ →</button>
+            </div>
+        </div>
+
+        <!-- スライド2: 探求志向型学習者の特性分析 -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">ステークホルダー2: 探求志向型学習者の特性</h2>
+                <p class="slide-subtitle">構造構成主義による関心相関性分析</p>
+            </div>
+            <div class="content">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 25%;">項目</th>
+                            <th style="width: 75%;">詳細</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>主要な関心</strong></td>
+                            <td>「なぜそうなるのか？」を深く理解したい</td>
+                        </tr>
+                        <tr>
+                            <td><strong>学習の動機</strong></td>
+                            <td>知的好奇心、学問的探究、真理の追求、理論的基盤の構築</td>
+                        </tr>
+                        <tr>
+                            <td><strong>学習における困難</strong></td>
+                            <td>表面的な説明に満足できない、体系的に学べる環境の不足、研究仲間との出会い不足</td>
+                        </tr>
+                        <tr>
+                            <td><strong>理想の学習状態</strong></td>
+                            <td>原理から体系的に学び、自分で仮説を立て検証しながら理解を深める</td>
+                        </tr>
+                        <tr>
+                            <td><strong>時間的制約</strong></td>
+                            <td>じっくり時間をかけることを厭わない、急がず深く学びたい</td>
+                        </tr>
+                        <tr>
+                            <td><strong>成果志向</strong></td>
+                            <td>理解の深さ、独創的な洞察、学術的貢献、知識の体系化</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="highlight-box">
+                    <h3 style="margin-bottom: 12px; color: #3498db;">💡 構造構成主義の洞察</h3>
+                    <p style="font-size: 16px;">
+                        探求志向型学習者にとって、「すぐ使える実用スキル」は浅薄に感じられ、学習意欲を満たさない。<br>
+                        <strong>「理論の深い探求と体系的理解」が最も関心相関性が高い。</strong>
+                    </p>
+                </div>
+
+                <h3 style="margin: 20px 0 10px 0;">関心事の優先順位(実用志向型との比較)</h3>
+                <div class="two-column">
+                    <div style="background: #ebf5fb; padding: 15px; border-radius: 8px; border-left: 4px solid #3498db;">
+                        <h4 style="color: #3498db; margin-bottom: 10px;">最優先(探求志向型)</h4>
+                        <ul style="font-size: 14px;">
+                            <li>深い理論的理解(原理・メカニズムの探求)</li>
+                            <li>体系的知識構築(全体像の把握)</li>
+                            <li>学術的対話(研究者・専門家との議論)</li>
+                        </ul>
+                    </div>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #95a5a6;">
+                        <h4 style="color: #7f8c8d; margin-bottom: 10px;">優先度低下(探求志向型)</h4>
+                        <ul style="font-size: 14px;">
+                            <li>即戦力スキル → 理解の深さを優先</li>
+                            <li>効率重視 → 時間をかけて深く学ぶ</li>
+                            <li>実務ROI → 知的満足度と理解度を重視</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-number">2 / 17</div>
+            <div class="navigation">
+                <button class="nav-button prev" onclick="previousSlide()">← 前へ</button>
+                <span class="slide-indicator">2 / 17</span>
+                <button class="nav-button next" onclick="nextSlide()">次へ →</button>
+            </div>
+        </div>
+
+        <!-- スライド3: システム設計原則 -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">探求型学習(IBL)設計原則</h2>
+                <p class="slide-subtitle">探求志向型に最適化した5つの原則</p>
+            </div>
+            <div class="content">
+                <div class="feature-box" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; margin-bottom: 15px;">
+                    <div class="feature-title" style="color: white; font-size: 20px;">探求志向型向けIBLアーキテクチャ</div>
+                    <p style="font-size: 16px;">実用スキルではなく、理論の深い理解と学術的探究を通じた学習</p>
+                </div>
+
+                <div class="three-column">
+                    <div class="feature-box">
+                        <div class="feature-title">1️⃣ Theory-Driven</div>
+                        <div class="feature-content">
+                            <p><strong>理論駆動型学習</strong></p>
+                            <p>表面的な使い方ではなく、「なぜそうなるのか」を原理から学ぶ</p>
+                            <p style="margin-top: 8px; font-size: 13px; color: #7f8c8d;">「どう使うか」より「なぜこう設計されているか」</p>
+                        </div>
+                    </div>
+
+                    <div class="feature-box">
+                        <div class="feature-title">2️⃣ Systematic Building</div>
+                        <div class="feature-content">
+                            <p><strong>体系的知識構築</strong></p>
+                            <p>断片的な知識ではなく、全体像と相互関連性を理解</p>
+                            <p style="margin-top: 8px; font-size: 13px; color: #7f8c8d;">「点」ではなく「面」で理解し、知識を構造化</p>
+                        </div>
+                    </div>
+
+                    <div class="feature-box">
+                        <div class="feature-title">3️⃣ Research-Oriented</div>
+                        <div class="feature-content">
+                            <p><strong>研究志向型</strong></p>
+                            <p>受動的な学習ではなく、能動的な探求</p>
+                            <p style="margin-top: 8px; font-size: 13px; color: #7f8c8d;">自分で問いを立て、仮説を検証する</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="two-column" style="margin-top: 15px;">
+                    <div class="feature-box">
+                        <div class="feature-title">4️⃣ Depth Over Breadth</div>
+                        <div class="feature-content">
+                            <p><strong>深さ優先</strong></p>
+                            <p>広く浅くではなく、狭く深く</p>
+                            <p>1つのトピックを徹底的に掘り下げる</p>
+                        </div>
+                    </div>
+
+                    <div class="feature-box">
+                        <div class="feature-title">5️⃣ Academic-Connected</div>
+                        <div class="feature-content">
+                            <p><strong>学術接続</strong></p>
+                            <p>最新の研究動向、論文、学会とのつながり</p>
+                            <p>研究者・専門家コミュニティへのアクセス</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <h3 style="margin-bottom: 10px; color: #3498db;">📊 理論 vs 実践の時間配分</h3>
+                    <div style="display: flex; justify-content: space-around; margin-top: 15px;">
+                        <div style="text-align: center;">
+                            <p style="font-size: 14px; margin-bottom: 5px;">実用志向型</p>
+                            <p style="font-size: 24px; font-weight: bold; color: #e74c3c;">理論20% : 実践80%</p>
+                        </div>
+                        <div style="text-align: center;">
+                            <p style="font-size: 14px; margin-bottom: 5px;">探求志向型</p>
+                            <p style="font-size: 24px; font-weight: bold; color: #3498db;">理論60% : 実践40%</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-number">3 / 17</div>
+            <div class="navigation">
+                <button class="nav-button prev" onclick="previousSlide()">← 前へ</button>
+                <span class="slide-indicator">3 / 17</span>
+                <button class="nav-button next" onclick="nextSlide()">次へ →</button>
+            </div>
+        </div>
+
+        <!-- スライド4: 外部仕様概要 -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">SPEC(2) 外部仕様の全体構成</h2>
+                <p class="slide-subtitle">6つのサブシステムと統合アーキテクチャ</p>
+            </div>
+            <div class="content">
+                <div style="background: #ebf5fb; padding: 20px; border-radius: 8px; border: 2px solid #3498db; margin-bottom: 20px;">
+                    <h3 style="color: #3498db; margin-bottom: 15px;">📋 6つの機能要求サブシステム</h3>
+                    
+                    <table style="font-size: 13px;">
+                        <thead>
+                            <tr>
+                                <th style="width: 15%;">SPEC ID</th>
+                                <th style="width: 30%;">サブシステム名</th>
+                                <th style="width: 55%;">主要機能</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="spec-badge">FR2.1</span></td>
+                                <td><strong>理論探求エンジン</strong></td>
+                                <td>原理解明、メカニズム探求、数学的基礎、理論史的背景</td>
+                            </tr>
+                            <tr>
+                                <td><span class="spec-badge">FR2.2</span></td>
+                                <td><strong>体系的知識構築システム</strong></td>
+                                <td>知識体系マップ、前提知識チェック、段階的深化、相互関連性可視化</td>
+                            </tr>
+                            <tr>
+                                <td><span class="spec-badge">FR2.3</span></td>
+                                <td><strong>研究プロジェクト支援</strong></td>
+                                <td>研究計画立案、実験設計、論文執筆、先行研究調査</td>
+                            </tr>
+                            <tr>
+                                <td><span class="spec-badge">FR2.4</span></td>
+                                <td><strong>学術志向コミュニティ</strong></td>
+                                <td>研究者ネットワーク、論文輪読会、学術的議論、専門家メンタリング</td>
+                            </tr>
+                            <tr>
+                                <td><span class="spec-badge">FR2.5</span></td>
+                                <td><strong>深い理解の可視化</strong></td>
+                                <td>概念マップ、知識グラフ、理論的つながり、理解度診断</td>
+                            </tr>
+                            <tr>
+                                <td><span class="spec-badge">FR2.6</span></td>
+                                <td><strong>AI研究アシスタント</strong></td>
+                                <td>文献調査、仮説生成、実験支援、理論的考察の深化</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="highlight-box">
+                    <h3 style="margin-bottom: 10px; color: #3498db;">🔑 設計の核心</h3>
+                    <p style="font-size: 15px; line-height: 1.7;">
+                        <strong>理論探求エンジン(FR2.1)が中核</strong>となり、他の5つのサブシステムが協調動作。<br>
+                        全てのサブシステムが「深い理解と学術的探究」を最優先に設計されている。
+                    </p>
+                </div>
+            </div>
+            <div class="slide-number">4 / 17</div>
+            <div class="navigation">
+                <button class="nav-button prev" onclick="previousSlide()">← 前へ</button>
+                <span class="slide-indicator">4 / 17</span>
+                <button class="nav-button next" onclick="nextSlide()">次へ →</button>
+            </div>
+        </div>
+
+        <!-- スライド5: FR2.1 理論探求エンジン -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">FR2.1: 理論探求エンジン</h2>
+                <p class="slide-subtitle"><span class="spec-badge">中核システム</span> Theory-Driven アプローチの実装</p>
+            </div>
+            <div class="content">
+                <div class="two-column">
+                    <div>
+                        <h3 style="margin-bottom: 10px; color: #3498db;">主要機能</h3>
+                        <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; margin-bottom: 10px;">
+                            <h4 style="color: #3498db; font-size: 15px; margin-bottom: 5px;">1. 原理・メカニズムの深掘り</h4>
+                            <ul style="font-size: 13px;">
+                                <li>入力:「なぜニューラルネットワークは学習できるのか？」</li>
+                                <li>処理:M⁶⁵理論30次元で知識構造を分析</li>
+                                <li>出力:数学的基礎→原理→実装→応用</li>
+                            </ul>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; margin-bottom: 10px;">
+                            <h4 style="color: #3498db; font-size: 15px; margin-bottom: 5px;">2. 数学的基礎の提供</h4>
+                            <ul style="font-size: 13px;">
+                                <li>必要な数学的前提知識の特定</li>
+                                <li>線形代数、微積分、確率論の体系的学習</li>
+                                <li>証明・導出プロセスの詳細解説</li>
+                            </ul>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; margin-bottom: 10px;">
+                            <h4 style="color: #3498db; font-size: 15px; margin-bottom: 5px;">3. 理論史的背景</h4>
+                            <ul style="font-size: 13px;">
+                                <li>なぜこの理論が生まれたのか</li>
+                                <li>歴史的発展と研究者の思考過程</li>
+                                <li>代替理論との比較・優位性</li>
+                            </ul>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 12px; border-radius: 6px;">
+                            <h4 style="color: #3498db; font-size: 15px; margin-bottom: 5px;">4. 原論文へのアクセス</h4>
+                            <ul style="font-size: 13px;">
+                                <li>オリジナル論文の紹介と解説</li>
+                                <li>重要な定理・証明の丁寧な説明</li>
+                                <li>論文の批判的読解支援</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 style="margin-bottom: 10px; color: #3498db;">実装例:探求課題の分析</h3>
+                        <div class="code-block" style="font-size: 11px;">
+【入力】
+学習者:「深層学習で勾配消失問題が起きる
+       理論的な理由を理解したい」
+
+【システムの分析結果】
+━━━━━━━━━━━━━━━━━━━━━
+探求課題構造化(M⁶⁵理論30次元分析)
+
+【数学的基礎】
+・微積分(偏微分、連鎖律)
+・線形代数(行列積、固有値)
+・解析学(数値の安定性)
+
+【理論的背景】
+・逆伝播法の原理
+・活性化関数の微分特性
+・ネットワーク深化と勾配の伝播
+
+【歴史的文脈】
+・1980-90年代の深層学習の冬
+・2006年のブレークスルー(Hinton)
+・ReLU、BatchNormなどの解決策の発展
+
+【学習パス】
+Phase 1(1週): 数学的準備
+Phase 2(2週): 逆伝播アルゴリズムの理論
+Phase 3(2週): 勾配消失のメカニズム
+Phase 4(1週): 解決策の理論的根拠
+
+【推奨文献】
+・原論文: Hochreiter (1991)
+・解説論文: Bengio et al. (1994)
+・教科書: Goodfellow Ch.8
+
+【到達目標】
+勾配消失問題を数式で説明でき、
+なぜReLUが有効かを理論的に理解する
+━━━━━━━━━━━━━━━━━━━━━
+                        </div>
+                        
+                        <div class="highlight-box" style="margin-top: 15px;">
+                            <p style="font-size: 14px;"><strong>非機能要求:</strong></p>
+                            <ul style="font-size: 13px;">
+                                <li>理論パス生成:1分以内</li>
+                                <li>数学的厳密性:大学院レベル</li>
+                                <li>論文へのアクセス:DOI/arXiv直リンク</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-number">5 / 17</div>
+            <div class="navigation">
+                <button class="nav-button prev" onclick="previousSlide()">← 前へ</button>
+                <span class="slide-indicator">5 / 17</span>
+                <button class="nav-button next" onclick="nextSlide()">次へ →</button>
+            </div>
+        </div>
+
+        <!-- スライド6: FR2.2 体系的知識構築 -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">FR2.2: 体系的知識構築システム</h2>
+                <p class="slide-subtitle">全体像を把握しながら段階的に深化</p>
+            </div>
+            <div class="content">
+                <h3 style="margin-bottom: 15px; color: #3498db;">最小知識セットではなく「完全知識体系」</h3>
+                
+                <div class="three-column">
+                    <div style="background: #ebf5fb; padding: 15px; border-radius: 8px; border: 2px solid #3498db;">
+                        <h4 style="color: #3498db; margin-bottom: 10px;">【基礎層】2-3ヶ月</h4>
+                        <ul style="font-size: 13px;">
+                            <li>数学的基礎</li>
+                            <li>プログラミング基礎</li>
+                            <li>科学的思考法</li>
+                        </ul>
+                        <p style="margin-top: 10px; font-weight: bold; font-size: 14px;">→ 急がず、基礎を完璧に</p>
+                    </div>
+                    
+                    <div style="background: #e8f4f8; padding: 15px; border-radius: 8px; border: 2px solid #5dade2;">
+                        <h4 style="color: #2980b9; margin-bottom: 10px;">【理論層】3-4ヶ月</h4>
+                        <ul style="font-size: 13px;">
+                            <li>分野の基本理論</li>
+                            <li>重要な概念と相互関係</li>
+                            <li>理論的フレームワーク</li>
+                        </ul>
+                        <p style="margin-top: 10px; font-weight: bold; font-size: 14px;">→ 原理から体系的に</p>
+                    </div>
+                    
+                    <div style="background: #d6eaf8; padding: 15px; border-radius: 8px; border: 2px solid #85c1e9;">
+                        <h4 style="color: #1f618d; margin-bottom: 10px;">【応用層】2-3ヶ月</h4>
+                        <ul style="font-size: 13px;">
+                            <li>理論の実装と検証</li>
+                            <li>ケーススタディ</li>
+                            <li>最新研究動向</li>
+                        </ul>
+                        <p style="margin-top: 10px; font-weight: bold; font-size: 14px;">→ 理論を実装で確認</p>
+                    </div>
+                </div>
+
+                <h3 style="margin: 20px 0 10px 0; color: #3498db;">知識体系の可視化</h3>
+                
+                <div class="two-column">
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                        <h4 style="color: #3498db; margin-bottom: 10px;">知識グラフ</h4>
+                        <p style="font-size: 14px; margin-bottom: 10px;">全トピックの依存関係を可視化:</p>
+                        <ul style="font-size: 13px;">
+                            <li><strong>ノード:</strong> 概念・理論・定理</li>
+                            <li><strong>エッジ:</strong> 依存関係</li>
+                            <li><strong>色:</strong> 理解度(赤→黄→緑)</li>
+                            <li><strong>サイズ:</strong> 重要度</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                        <h4 style="color: #3498db; margin-bottom: 10px;">前提知識チェック</h4>
+                        <p style="font-size: 14px; margin-bottom: 10px;">各トピック学習前に:</p>
+                        <ol style="font-size: 13px; padding-left: 20px;">
+                            <li>必要な前提知識の確認テスト</li>
+                            <li>不足があれば補習コンテンツ提示</li>
+                            <li>基礎が固まってから次へ進む</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 15px;">
+                    <h3 style="margin-bottom: 10px; color: #3498db;">🔗 理論の相互関連性</h3>
+                    <p style="font-size: 14px;">「この理論は以下と関連しています」</p>
+                    <ul style="font-size: 13px; margin-top: 8px;">
+                        <li><strong>数学的基礎:</strong> 〇〇定理</li>
+                        <li><strong>歴史的発展:</strong> △△の研究から発展</li>
+                        <li><strong>応用分野:</strong> □□に利用</li>
+                        <li><strong>関連理論:</strong> ××との比較</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="slide-number">6 / 17</div>
+            <div class="navigation">
+                <button class="nav-button prev" onclick="previousSlide()">← 前へ</button>
+                <span class="slide-indicator">6 / 17</span>
+                <button class="nav-button next" onclick="nextSlide()">次へ →</button>
+            </div>
+        </div>
+
+        <!-- スライド7: FR2.3 研究プロジェクト支援 -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">FR2.3: 研究プロジェクト支援システム</h2>
+                <p class="slide-subtitle">学習成果を研究アウトプットに</p>
+            </div>
+            <div class="content">
+                <h3 style="margin-bottom: 15px; color: #3498db;">段階的研究プロジェクト</h3>
+                
+                <div class="three-column">
+                    <div style="background: #fffacd; padding: 15px; border-radius: 8px; border: 2px solid #f39c12;">
+                        <h4 style="color: #f39c12; margin-bottom: 10px;">【初級】1-2ヶ月</h4>
+                        <ul style="font-size: 13px;">
+                            <li>既存研究の再現実験</li>
+                            <li>論文の批判的レビュー</li>
+                            <li>小規模な仮説検証</li>
+                        </ul>
+                        <p style="margin-top: 10px; font-weight: bold; font-size: 14px;">→ 研究の作法を学ぶ</p>
+                    </div>
+                    
+                    <div style="background: #e8f4f8; padding: 15px; border-radius: 8px; border: 2px solid #3498db;">
+                        <h4 style="color: #3498db; margin-bottom: 10px;">【中級】2-3ヶ月</h4>
+                        <ul style="font-size: 13px;">
+                            <li>オリジナルな問いの設定</li>
+                            <li>実験設計と実施</li>
+                            <li>結果の理論的考察</li>
+                        </ul>
+                        <p style="margin-top: 10px; font-weight: bold; font-size: 14px;">→ 独自の研究を行う</p>
+                    </div>
+                    
+                    <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; border: 2px solid #27ae60;">
+                        <h4 style="color: #27ae60; margin-bottom: 10px;">【上級】3-6ヶ月</h4>
+                        <ul style="font-size: 13px;">
+                            <li>学術論文の執筆</li>
+                            <li>学会発表の準備</li>
+                            <li>オープンソース貢献</li>
+                        </ul>
+                        <p style="margin-top: 10px; font-weight: bold; font-size: 14px;">→ 学術コミュニティへ貢献</p>
+                    </div>
+                </div>
+
+                <h3 style="margin: 20px 0 10px 0; color: #3498db;">研究計画立案支援</h3>
+                
+                <div class="two-column">
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                        <h4 style="color: #3498db; margin-bottom: 10px;">1. 研究テーマの設定</h4>
+                        <ul style="font-size: 13px;">
+                            <li>興味あるトピックから研究可能な問いへ</li>
+                            <li>先行研究との差別化</li>
+                            <li>実現可能性の評価</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                        <h4 style="color: #3498db; margin-bottom: 10px;">2. 実験設計</h4>
+                        <ul style="font-size: 13px;">
+                            <li>仮説の明確化</li>
+                            <li>実験手法の選択</li>
+                            <li>データ収集計画</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div style="background: #ebf5fb; padding: 20px; border-radius: 8px; border: 2px solid #3498db; margin-top: 15px;">
+                    <h4 style="color: #3498db; margin-bottom: 15px; font-size: 18px;">先行研究調査支援</h4>
+                    <ul style="font-size: 14px;">
+                        <li>関連論文の自動抽出(Google Scholar, arXiv連携)</li>
+                        <li>重要論文の推薦(引用数、関連度)</li>
+                        <li>文献マップの自動生成</li>
+                        <li>研究動向の可視化</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="slide-number">7 / 17</div>
+            <div class="navigation">
+                <button class="nav-button prev" onclick="previousSlide()">← 前へ</button>
+                <span class="slide-indicator">7 / 17</span>
+                <button class="nav-button next" onclick="nextSlide()">次へ →</button>
+            </div>
+        </div>
+
+        <!-- スライド8: FR2.4 学術志向コミュニティ -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">FR2.4: 学術志向コミュニティシステム</h2>
+                <p class="slide-subtitle">研究者・専門家との知的交流</p>
+            </div>
+            <div class="content">
+                <h3 style="margin-bottom: 15px; color: #3498db;">階層別コミュニティ構造</h3>
+                
+                <div class="three-column">
+                    <div style="background: #ebf5fb; padding: 15px; border-radius: 8px; border: 2px solid #3498db;">
+                        <h4 style="color: #3498db; margin-bottom: 10px;">学習者コミュニティ</h4>
+                        <p style="font-size: 13px; margin-bottom: 8px;">同じ分野を探求する仲間</p>
+                        <ul style="font-size: 12px;">
+                            <li>論文輪読会(週次)</li>
+                            <li>理論の議論フォーラム</li>
+                            <li>共同学習プロジェクト</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="background: #e8f4f8; padding: 15px; border-radius: 8px; border: 2px solid #5dade2;">
+                        <h4 style="color: #2980b9; margin-bottom: 10px;">大学院生・研究者</h4>
+                        <p style="font-size: 13px; margin-bottom: 8px;">実際の研究者との交流</p>
+                        <ul style="font-size: 12px;">
+                            <li>メンターシップ制度</li>
+                            <li>研究相談</li>
+                            <li>最新研究の紹介</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="background: #f3e5f5; padding: 15px; border-radius: 8px; border: 2px solid #9b59b6;">
+                        <h4 style="color: #9b59b6; margin-bottom: 10px;">専門家コミュニティ</h4>
+                        <p style="font-size: 13px; margin-bottom: 8px;">分野のトップ研究者</p>
+                        <ul style="font-size: 12px;">
+                            <li>オンライン講義</li>
+                            <li>Q&Aセッション</li>
+                            <li>研究指導</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3 style="margin: 20px 0 10px 0; color: #3498db;">論文輪読会システム</h3>
+                
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <h4 style="color: #3498db; margin-bottom: 10px;">週次で論文を深く読む:</h4>
+                    <div class="two-column" style="margin-top: 10px;">
+                        <div>
+                            <p style="font-size: 14px; font-weight: bold; margin-bottom: 5px;">1. 事前準備(各自)</p>
+                            <ul style="font-size: 13px;">
+                                <li>論文の批判的読解</li>
+                                <li>疑問点の整理</li>
+                                <li>関連研究の調査</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <p style="font-size: 14px; font-weight: bold; margin-bottom: 5px;">2. 輪読会当日(2-3時間)</p>
+                            <ul style="font-size: 13px;">
+                                <li>論文の要約発表</li>
+                                <li>理論的議論</li>
+                                <li>実験手法の評価</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 style="margin-bottom: 10px; color: #3498db;">学術的議論の場</h3>
+                <div style="background: #ebf5fb; padding: 15px; border-radius: 8px;">
+                    <p style="font-size: 14px; margin-bottom: 10px;">実用的な質問ではなく、理論的な議論:</p>
+                    <ul style="font-size: 13px;">
+                        <li>「この定理の証明で、なぜこのステップが必要？」</li>
+                        <li>「〇〇理論と△△理論の本質的な違いは？」</li>
+                        <li>「この実験結果をどう理論的に説明できる？」</li>
+                    </ul>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 15px;">
+                    <h3 style="margin-bottom: 10px; color: #3498db;">🎓 キャリアパス支援</h3>
+                    <p style="font-size: 14px;">探求を仕事にするための支援:</p>
+                    <ul style="font-size: 13px; margin-top: 8px;">
+                        <li>大学院進学相談</li>
+                        <li>研究職への道筋</li>
+                        <li>産業界の研究職情報</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="slide-number">8 / 17</div>
+            <div class="navigation">
+                <button class="nav-button prev" onclick="previousSlide()">← 前へ</button>
+                <span class="slide-indicator">8 / 17</span>
+                <button class="nav-button next" onclick="nextSlide()">次へ →</button>
+            </div>
+        </div>
+
+        <!-- スライド9: FR2.5 深い理解の可視化 -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">FR2.5: 深い理解の可視化システム</h2>
+                <p class="slide-subtitle">理解度を多層的に診断・可視化</p>
+            </div>
+            <div class="content">
+                <h3 style="margin-bottom: 15px; color: #3498db;">パーソナル知識グラフ</h3>
+                
+                <div style="background: #ebf5fb; padding: 20px; border-radius: 8px; border: 2px solid #3498db; margin-bottom: 20px;">
+                    <h4 style="color: #3498db; margin-bottom: 10px;">学習者の理解を可視化:</h4>
+                    <ul style="font-size: 14px;">
+                        <li><strong>ノード:</strong> 概念・理論・定理</li>
+                        <li><strong>エッジ:</strong> 依存関係・相互関連</li>
+                        <li><strong>色:</strong> 理解度(赤→黄→緑)</li>
+                        <li><strong>サイズ:</strong> 重要度</li>
+                    </ul>
+                    <p style="margin-top: 10px; font-weight: bold;">→ 自分の知識体系が一目でわかる</p>
+                </div>
+
+                <h3 style="margin-bottom: 15px; color: #3498db;">多層理解度診断(ブルームのタキソノミー)</h3>
+                
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px;">
+                    <div style="background: #ffebee; padding: 12px; border-radius: 6px; border-left: 4px solid #e74c3c;">
+                        <p style="font-weight: bold; font-size: 14px; color: #e74c3c;">レベル1-2</p>
+                        <p style="font-size: 13px;">記憶・理解</p>
+                    </div>
+                    <div style="background: #fff9c4; padding: 12px; border-radius: 6px; border-left: 4px solid #f39c12;">
+                        <p style="font-weight: bold; font-size: 14px; color: #f39c12;">レベル3-4</p>
+                        <p style="font-size: 13px;">応用・分析</p>
+                    </div>
+                    <div style="background: #e8f5e9; padding: 12px; border-radius: 6px; border-left: 4px solid #27ae60;">
+                        <p style="font-weight: bold; font-size: 14px; color: #27ae60;">レベル5-6</p>
+                        <p style="font-size: 13px;">評価・創造</p>
+                    </div>
+                </div>
+
+                <table style="font-size: 13px;">
+                    <thead>
+                        <tr>
+                            <th style="width: 25%;">レベル</th>
+                            <th style="width: 75%;">評価基準</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>レベル1: 記憶</strong></td>
+                            <td>定義を述べられるか</td>
+                        </tr>
+                        <tr>
+                            <td><strong>レベル2: 理解</strong></td>
+                            <td>自分の言葉で説明できるか</td>
+                        </tr>
+                        <tr>
+                            <td><strong>レベル3: 応用</strong></td>
+                            <td>新しい問題に適用できるか</td>
+                        </tr>
+                        <tr>
+                            <td><strong>レベル4: 分析</strong></td>
+                            <td>構成要素に分解して説明できるか</td>
+                        </tr>
+                        <tr>
+                            <td><strong>レベル5: 評価</strong></td>
+                            <td>批判的に評価できるか</td>
+                        </tr>
+                        <tr>
+                            <td><strong>レベル6: 創造</strong></td>
+                            <td>新しい理論・アイデアを生み出せるか</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="highlight-box" style="margin-top: 15px;">
+                    <h3 style="margin-bottom: 10px; color: #3498db;">📊 理解の深さの可視化</h3>
+                    <p style="font-size: 14px;">トピックごとに「理解の深度」を表示:</p>
+                    <ul style="font-size: 13px; margin-top: 8px;">
+                        <li><strong>表層的理解:</strong> 定義は知っている</li>
+                        <li><strong>中程度理解:</strong> メカニズムがわかる</li>
+                        <li><strong>深い理解:</strong> 数学的に導出できる</li>
+                        <li><strong>専門家レベル:</strong> 新しい応用を考案できる</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="slide-number">9 / 17</div>
+            <div class="navigation">
+                <button class="nav-button prev" onclick="previousSlide()">← 前へ</button>
+                <span class="slide-indicator">9 / 17</span>
+                <button class="nav-button next" onclick="nextSlide()">次へ →</button>
+            </div>
+        </div>
+
+        <!-- スライド10: FR2.6 AI研究アシスタント -->
+        <div class="slide">">
+            <div class="slide-header">
+                <h2 class="slide-title">FR2.6: AI研究アシスタントシステム</h2>
+                <p class="slide-subtitle">深い探求を支援する研究パートナー</p>
+            </div>
+            <div class="content">
+                <div class="two-column">
+                    <div>
+                        <h3 style="margin-bottom: 10px; color: #3498db;">文献調査アシスタント</h3>
+                        <div class="code-block" style="font-size: 11px;">
+【対話例】
+
+学習者:「アテンションメカニズムの
+       理論的基礎を調べたい」
+
+AI:「アテンションメカニズムに関する
+    重要論文を時系列で整理しました:
+
+【基礎理論】
+1. Bahdanau (2014) - 初期のアテンション
+2. Vaswani (2017) - Transformer
+3. Cordonnier (2020) - 数学的解析
+
+【各論文の要点】
+Bahdanau: Seq2seqの文脈ベクトル問題を
+         ソフトマックス重み付け和で解決
+
+Vaswani: Self-attentionによる並列計算
+        位置エンコーディングの導入
+
+Cordonnier: アテンションの理論的性質
+           CNNとの関係性を証明
+
+【推奨学習順序】
+週1: RNNの限界理解 → Bahdanau論文
+週2-3: Self-attentionの数学
+週4: 理論的深化 → Cordonnier論文」
+                        </div>
+                        <p style="font-size: 13px; color: #7f8c8d; margin-top: 10px;">→ 表面的な使い方ではなく、理論の深い理解を支援</p>
+                    </div>
+                    
+                    <div>
+                        <h3 style="margin-bottom: 10px; color: #3498db;">仮説生成・検証支援</h3>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                            <h4 style="color: #3498db; margin-bottom: 10px;">1. 問いの明確化</h4>
+                            <ul style="font-size: 13px;">
+                                <li>漠然とした疑問を研究可能な問いへ</li>
+                                <li>検証可能な仮説の定式化</li>
+                            </ul>
+                        </div>
+                        
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                            <h4 style="color: #3498db; margin-bottom: 10px;">2. 実験設計の提案</h4>
+                            <ul style="font-size: 13px;">
+                                <li>仮説を検証する実験手法</li>
+                                <li>必要なデータ・計算資源</li>
+                                <li>統計的検定の選択</li>
+                            </ul>
+                        </div>
+                        
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                            <h4 style="color: #3498db; margin-bottom: 10px;">3. 結果の理論的解釈</h4>
+                            <ul style="font-size: 13px;">
+                                <li>実験結果が示唆すること</li>
+                                <li>既存理論との整合性</li>
+                                <li>新しい疑問の提起</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 15px;">
+                    <h3 style="margin-bottom: 10px; color: #3498db;">⚠️ AIの限界の明示</h3>
+                    <div class="two-column" style="margin-top: 10px;">
+                        <div>
+                            <p style="font-size: 14px; font-weight: bold; margin-bottom: 5px;">AIの役割</p>
+                            <ul style="font-size: 13px;">
+                                <li>文献の整理・要約</li>
+                                <li>実験の補助</li>
+                                <li>理論的アイデアの壁打ち</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <p style="font-size: 14px; font-weight: bold; margin-bottom: 5px;">人間の役割</p>
+                            <ul style="font-size: 13px;">
+                                <li>独創的な問いの設定</li>
+                                <li>理論の本質的理解</li>
+                                <li>創造的な洞察</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <p style="margin-top: 10px; font-weight: bold; text-align: center;">最終的な理解と判断は自分で行う</p>
+                </div>
+            </div>
+            <div class="slide-number">10 / 17</div>
+            <div class="navigation">
+                <button class="nav-button prev" onclick="previousSlide()">← 前へ</button>
+                <span class="slide-indicator">10 / 17</span>
+                <button class="nav-button next" onclick="nextSlide()">次へ →</button>
+            </div>
+        </div>
+
+        <!-- スライド11: システムアーキテクチャ全体図 -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">LS(2) システムアーキテクチャ</h2>
+                <p class="slide-subtitle">探求志向型特化アーキテクチャ</p>
+            </div>
+            <div class="content">
+                <div class="architecture-diagram">
+                    <div class="layer" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white;">
+                        <div class="layer-title" style="color: white;">学術統合インターフェース層</div>
+                        <div style="font-size: 13px; margin-top: 6px; color: white;">論文DB連携、学会情報、大学図書館、arXiv</div>
+                    </div>
+
+                    <div class="layer" style="background: #ebf5fb; border-color: #3498db;">
+                        <div class="layer-title">理論探求エンジン(中核)</div>
+                        <div style="font-size: 13px; margin-top: 6px;">
+                            原理解明・体系的知識構築・理解度診断
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 12px 0;">
+                        <div class="layer" style="background: #fffacd; border-color: #f39c12; padding: 12px;">
+                            <div class="layer-title" style="font-size: 14px; color: #f39c12;">知識体系<br>構築</div>
+                            <div style="font-size: 11px; margin-top: 5px;">完全知識マップ</div>
+                        </div>
+                        <div class="layer" style="background: #e8f4f8; border-color: #3498db; padding: 12px;">
+                            <div class="layer-title" style="font-size: 14px; color: #3498db;">研究PJ<br>支援</div>
+                            <div style="font-size: 11px; margin-top: 5px;">論文執筆支援</div>
+                        </div>
+                        <div class="layer" style="background: #f3e5f5; border-color: #9b59b6; padding: 12px;">
+                            <div class="layer-title" style="font-size: 14px; color: #9b59b6;">学術<br>コミュニティ</div>
+                            <div style="font-size: 11px; margin-top: 5px;">論文輪読会</div>
+                        </div>
+                        <div class="layer" style="background: #e8f5e9; border-color: #27ae60; padding: 12px;">
+                            <div class="layer-title" style="font-size: 14px; color: #27ae60;">深い理解<br>可視化</div>
+                            <div style="font-size: 11px; margin-top: 5px;">知識グラフ</div>
+                        </div>
+                    </div>
+
+                    <div class="layer" style="background: #f8f9fa; border-color: #95a5a6;">
+                        <div class="layer-title">学術志向コミュニティ基盤</div>
+                        <div style="font-size: 13px; margin-top: 6px;">
+                            論文輪読会・研究者ネットワーク・学会情報
+                        </div>
+                    </div>
+
+                    <div class="layer" style="background: #ecf0f1; border-color: #7f8c8d;">
+                        <div class="layer-title">研究特化AIエージェント群</div>
+                        <div style="font-size: 13px; margin-top: 6px;">
+                            文献調査・仮説生成・実験支援・理論考察の深化
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 15px;">
+                    <h3 style="margin-bottom: 10px; color: #3498db;">🔑 アーキテクチャの特徴</h3>
+                    <ul style="font-size: 14px;">
+                        <li><strong>理論探求エンジンが中核:</strong>全てが深い理解を目指す</li>
+                        <li><strong>学術システム統合:</strong>論文・学会との密接な連携</li>
+                        <li><strong>深さ優先設計:</strong>時間をかけて徹底的に学ぶ構造</li>
+                        <li><strong>学術品質保証:</strong>全ての成果物が研究レベル</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="slide-number">11 / 17</div>
+            <div class="navigation">
+                <button class="nav-button prev" onclick="previousSlide()">← 前へ</button>
+                <span class="slide-indicator">11 / 17</span>
+                <button class="nav-button next" onclick="nextSlide()">次へ →</button>
+            </div>
+        </div>
+
+        <!-- スライド12: 他ステークホルダーとの比較 -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">他ステークホルダーとの設計差異</h2>
+                <p class="slide-subtitle">探求志向型(SH2) vs 実用志向型(SH1)の比較</p>
+            </div>
+            <div class="content">
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 25%;">要素</th>
+                            <th style="width: 37.5%;">実用志向型(SH1)</th>
+                            <th style="width: 37.5%;">探求志向型(SH2)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>学習の起点</strong></td>
+                            <td>業務課題</td>
+                            <td style="background: #ebf5fb;"><strong>理論・原理</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong>コンテンツ</strong></td>
+                            <td>最小限・Just-in-Time</td>
+                            <td style="background: #ebf5fb;"><strong>包括的・体系的</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong>成果物</strong></td>
+                            <td>業務で使える実装物</td>
+                            <td style="background: #ebf5fb;"><strong>論文・研究ノート</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong>コミュニティ</strong></td>
+                            <td>同業界・同職種</td>
+                            <td style="background: #ebf5fb;"><strong>研究者・学者</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong>評価基準</strong></td>
+                            <td>業務改善効果、ROI</td>
+                            <td style="background: #ebf5fb;"><strong>理解の深さ、学術貢献</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong>時間配分</strong></td>
+                            <td>理論20%:実践80%</td>
+                            <td style="background: #ebf5fb;"><strong>理論60%:実践40%</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong>AI活用</strong></td>
+                            <td>業務効率化ツール</td>
+                            <td style="background: #ebf5fb;"><strong>研究アシスタント</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong>学習完了率</strong></td>
+                            <td>85%</td>
+                            <td style="background: #ebf5fb;"><strong>70%</strong>(難易度高いため)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>学習時間</strong></td>
+                            <td>50時間</td>
+                            <td style="background: #ebf5fb;"><strong>200時間</strong>(じっくり深く)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>実務適用率</strong></td>
+                            <td>90%</td>
+                            <td style="background: #ebf5fb;"><strong>30%</strong>(目的が理解)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>学術貢献</strong></td>
+                            <td>低</td>
+                            <td style="background: #ebf5fb;"><strong>高(論文・発表)</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="highlight-box">
+                    <h3 style="margin-bottom: 10px; color: #3498db;">💡 構造構成主義の実践</h3>
+                    <p style="font-size: 15px;">
+                        同じ「学習者」であっても、<strong>関心の違い</strong>により、最適なシステムは正反対。<br>
+                        探求志向型には「理論優先・深さ重視」の設計が関心相関性が高い。
+                    </p>
+                </div>
+            </div>
+            <div class="slide-number">12 / 17</div>
+            <div class="navigation">
+                <button class="nav-button prev" onclick="previousSlide()">← 前へ</button>
+                <span class="slide-indicator">12 / 17</span>
+                <button class="nav-button next" onclick="nextSlide()">次へ →</button>
+            </div>
+        </div>
+
+        <!-- スライド13: ユーザージャーニー前半 -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">実装例:ユーザージャーニー(1/2)</h2>
+                <p class="slide-subtitle">探求志向型学習者Bさんのストーリー Week 1-4</p>
+            </div>
+            <div class="content">
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <h3 style="color: #3498db; margin-bottom: 10px;">👤 Bさんのプロファイル</h3>
+                    <ul style="font-size: 14px;">
+                        <li>職種:ソフトウェアエンジニア(28歳)</li>
+                        <li>課題:機械学習を使っているが、理論がブラックボックスで気持ち悪い</li>
+                        <li>目標:数学的基礎から深く理解したい</li>
+                        <li>制約:週末に10時間、じっくり学習する時間が取れる</li>
+                    </ul>
+                </div>
+
+                <h3 style="margin-bottom: 10px; color: #3498db;">Week 1-2: 理論的基礎の確認</h3>
+                
+                <div class="journey-step">
+                    <div class="journey-step-title">[Day 1 - 土曜 10:00] 探求課題の入力</div>
+                    <div class="code-block" style="font-size: 11px;">
+システム:「ようこそ！何を深く理解したいですか？」
+
+Bさん:「ニューラルネットワークがなぜ学習できるのか、
+       数学的に理解したい」
+
+システム:「素晴らしい問いですね。深く理解するには
+         数学的基礎が必要です。
+
+【前提知識チェック】
+・線形代数: ○(大学レベル)
+・微積分: △(復習推奨)
+・確率論: ×(学習必要)
+
+【学習パス】全12週間
+Phase 1(2週): 数学的基礎の強化
+Phase 2(4週): 最適化理論の深掘り
+Phase 3(4週): ニューラルネットの理論
+Phase 4(2週): 最新理論動向
+
+始めますか？」
+
+Bさん:「はい！」
+                    </div>
+                </div>
+
+                <div class="journey-step">
+                    <div class="journey-step-title">[Week 1-2] 数学的基礎の徹底学習</div>
+                    <div style="font-size: 14px; margin-top: 10px;">
+                        <p style="margin-bottom: 8px;"><strong>システムが提供する体系的コンテンツ:</strong></p>
+                        <ul style="font-size: 13px;">
+                            <li>微積分の復習(偏微分、連鎖律、テイラー展開)</li>
+                            <li>確率論の基礎(確率分布、期待値、分散)</li>
+                            <li>数値最適化の理論(勾配降下法の収束性)</li>
+                        </ul>
+                        <p style="margin-top: 10px; font-size: 13px;"><strong>各トピックで:</strong></p>
+                        <ol style="font-size: 13px; padding-left: 20px;">
+                            <li>理論の説明(定義、定理、証明)</li>
+                            <li>直感的な理解</li>
+                            <li>演習問題(証明問題含む)</li>
+                            <li>理解度テスト</li>
+                        </ol>
+                        <p style="margin-top: 10px; font-weight: bold; color: #3498db;">到達基準: 全ての証明を理解し、自分で再現できる</p>
+                    </div>
+                </div>
+
+                <h3 style="margin: 20px 0 10px 0; color: #3498db;">Week 3-4: 理論の深掘り開始</h3>
+                
+                <div class="journey-step">
+                    <div class="journey-step-title">[Week 3-4] 逆伝播アルゴリズムの理論的理解</div>
+                    <div style="font-size: 14px; margin-top: 10px;">
+                        <p style="margin-bottom: 8px;"><strong>論文輪読会に参加:</strong></p>
+                        <ul style="font-size: 13px;">
+                            <li>Rumelhart et al. (1986) "Learning representations by back-propagating errors"</li>
+                            <li>数式の一行一行を丁寧に追う</li>
+                            <li>なぜ連鎖律で勾配が計算できるのか</li>
+                        </ul>
+                        <p style="margin-top: 10px; font-size: 13px;"><strong>実装演習:</strong></p>
+                        <ul style="font-size: 13px;">
+                            <li>自分でゼロから実装(ライブラリを使わず)</li>
+                            <li>数学的理解と実装の対応を確認</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-number">13 / 17</div>
+            <div class="navigation">
+                <button class="nav-button prev" onclick="previousSlide()">← 前へ</button>
+                <span class="slide-indicator">13 / 17</span>
+                <button class="nav-button next" onclick="nextSlide()">次へ →</button>
+            </div>
+        </div>
+
+        <!-- スライド14: ユーザージャーニー後半 -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">実装例:ユーザージャーニー(2/2)</h2>
+                <p class="slide-subtitle">Week 5-12: 研究プロジェクトと成果のまとめ</p>
+            </div>
+            <div class="content">
+                <h3 style="margin-bottom: 10px; color: #3498db;">Week 5-8: 深層学習の理論的課題</h3>
+                
+                <div class="journey-step">
+                    <div class="journey-step-title">[Week 5-8] 研究プロジェクト開始</div>
+                    <div style="background: #ebf5fb; padding: 15px; border-radius: 6px; margin-top: 10px;">
+                        <p style="font-size: 14px; margin-bottom: 10px;"><strong>研究テーマ:</strong></p>
+                        <p style="font-size: 14px;">「活性化関数の微分特性が学習効率に与える影響」</p>
+                        
+                        <p style="margin-top: 15px; font-size: 14px; margin-bottom: 8px;"><strong>研究プロセス:</strong></p>
+                        <ol style="font-size: 13px; padding-left: 20px;">
+                            <li><strong>文献調査</strong>
+                                <ul>
+                                    <li>勾配消失問題の理論的分析論文を10本読む</li>
+                                    <li>各解決策(ReLU, BatchNorm, ResNet)の理論的根拠</li>
+                                </ul>
+                            </li>
+                            <li><strong>仮説設定と実験設計</strong>
+                                <ul>
+                                    <li>様々な活性化関数で学習曲線を比較</li>
+                                    <li>理論予測と実験結果の照合</li>
+                                </ul>
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+
+                <h3 style="margin: 20px 0 10px 0; color: #3498db;">Week 9-12: 研究成果のまとめ</h3>
+                
+                <div class="journey-step">
+                    <div class="journey-step-title">[Week 9-12] 論文執筆と発表</div>
+                    <div style="font-size: 14px; margin-top: 10px;">
+                        <p style="margin-bottom: 8px;"><strong>Week 9-10: 論文執筆</strong></p>
+                        <ul style="font-size: 13px;">
+                            <li>IMRAD形式の論文構成</li>
+                            <li>数式の記法チェック</li>
+                            <li>図表の作成支援</li>
+                        </ul>
+                        
+                        <p style="margin-top: 10px; margin-bottom: 8px;"><strong>Week 11: 論文輪読会で発表</strong></p>
+                        <ul style="font-size: 13px;">
+                            <li>「実験設計が厳密で良い」</li>
+                            <li>「考察が深い、ここをさらに掘り下げると論文になる」</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; padding: 25px; border-radius: 12px; margin: 20px 0;">
+                    <h3 style="color: white; margin-bottom: 15px; text-align: center;">🎉 成果サマリー</h3>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; margin-top: 15px;">
+                        <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px; text-align: center;">
+                            <p style="font-size: 28px; font-weight: bold;">120h</p>
+                            <p style="font-size: 13px;">学習時間投資</p>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px; text-align: center;">
+                            <p style="font-size: 28px; font-weight: bold;">修士級</p>
+                            <p style="font-size: 13px;">理解の深さ</p>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px; text-align: center;">
+                            <p style="font-size: 28px; font-weight: bold;">1本</p>
+                            <p style="font-size: 13px;">論文ドラフト</p>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px; text-align: center;">
+                            <p style="font-size: 28px; font-weight: bold;">40p</p>
+                            <p style="font-size: 13px;">研究ノート</p>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 20px; background: white; color: #2c3e50; padding: 15px; border-radius: 8px;">
+                        <p style="font-size: 15px;"><strong>成果物:</strong></p>
+                        <ul style="font-size: 14px; margin-top: 8px;">
+                            <li>40ページの研究ノート</li>
+                            <li>実験コード(GitHub公開)</li>
+                            <li>論文ドラフト(arXiv投稿レベル)</li>
+                            <li>学術的ネットワーク</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div style="background: #ebf5fb; padding: 15px; border-radius: 8px; border-left: 4px solid #3498db;">
+                    <p style="font-weight: bold; color: #3498db; margin-bottom: 5px;">次のステップ:</p>
+                    <ul style="font-size: 13px;">
+                        <li>さらなる理論の探求(強化学習の理論)</li>
+                        <li>学会発表への挑戦</li>
+                        <li>大学院進学の検討</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="slide-number">14 / 17</div>
+            <div class="navigation">
+                <button class="nav-button prev" onclick="previousSlide()">← 前へ</button>
+                <span class="slide-indicator">14 / 17</span>
+                <button class="nav-button next" onclick="nextSlide()">次へ →</button>
+            </div>
+        </div>
+
+        <!-- スライド15: 期待される効果 -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">期待される効果とROI</h2>
+                <p class="slide-subtitle">探求志向型特化設計による成果</p>
+            </div>
+            <div class="content">
+                <h3 style="margin-bottom: 15px; color: #3498db;">学習者への効果</h3>
+                
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px;">
+                    <div class="metric-card">
+                        <div class="metric-value">70%</div>
+                        <div class="metric-label">学習完了率<br>(難易度高い)</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">200時間</div>
+                        <div class="metric-label">学習時間<br>(じっくり深く)</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">修士級</div>
+                        <div class="metric-label">理解の深さ<br>(大学院レベル)</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">0.5本</div>
+                        <div class="metric-label">平均論文数<br>(arXiv投稿)</div>
+                    </div>
+                </div>
+
+                <h3 style="margin-bottom: 15px; color: #3498db;">企業・組織への効果</h3>
+                
+                <table style="font-size: 14px;">
+                    <thead>
+                        <tr>
+                            <th style="width: 30%;">効果項目</th>
+                            <th style="width: 70%;">詳細</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>技術的深化</strong></td>
+                            <td>表面的な適用ではなく、原理を理解した技術活用</td>
+                        </tr>
+                        <tr>
+                            <td><strong>イノベーション創出</strong></td>
+                            <td>深い理解から独創的なアイデアが生まれる</td>
+                        </tr>
+                        <tr>
+                            <td><strong>研究開発力強化</strong></td>
+                            <td>社内に研究者レベルの人材が育つ</td>
+                        </tr>
+                        <tr>
+                            <td><strong>技術的意思決定</strong></td>
+                            <td>理論的根拠に基づく正確な技術選択</td>
+                        </tr>
+                        <tr>
+                            <td><strong>学術連携</strong></td>
+                            <td>大学・研究機関との共同研究が可能に</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <h3 style="margin-bottom: 10px; color: #3498db;">💰 投資対効果の考え方(探求型の場合)</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
+                        <div>
+                            <p style="font-size: 15px; margin-bottom: 8px;"><strong>【コスト】(50名規模)</strong></p>
+                            <ul style="font-size: 14px;">
+                                <li>システム開発・運用:年間4,000万円</li>
+                                <li>学習時間(業務時間外中心)</li>
+                                <li>合計コスト:約5,000万円/年</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <p style="font-size: 15px; margin-bottom: 8px;"><strong>【効果】(定量化は困難)</strong></p>
+                            <ul style="font-size: 14px;">
+                                <li>技術的深化による製品品質向上</li>
+                                <li>独創的イノベーション創出</li>
+                                <li>特許・論文による知的財産</li>
+                                <li>企業ブランド価値向上</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <p style="margin-top: 15px; text-align: center; font-weight: bold; color: #3498db;">
+                        → ROIは測定しにくいが、長期的な競争優位性を構築
+                    </p>
+                </div>
+            </div>
+            <div class="slide-number">15 / 17</div>
+            <div class="navigation">
+                <button class="nav-button prev" onclick="previousSlide()">← 前へ</button>
+                <span class="slide-indicator">15 / 17</span>
+                <button class="nav-button next" onclick="nextSlide()">次へ →</button>
+            </div>
+        </div>
+
+        <!-- スライド16: まとめ -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">まとめ:M⁶⁵理論による要求開発の革新性</h2>
+                <p class="slide-subtitle">体系的かつ高生産性な要求開発の実現</p>
+            </div>
+            <div class="content">
+                <div style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; padding: 25px; border-radius: 12px; margin-bottom: 20px;">
+                    <h3 style="color: white; margin-bottom: 15px; font-size: 22px;">🎯 本事例で実証したこと(探求志向型)</h3>
+                    <p style="font-size: 17px; line-height: 1.8;">
+                        M⁶⁵理論 × IEEE 42010 × 生成AIの組み合わせにより、<br>
+                        <strong>同じ「学習システム」でも全く異なる要求が導出可能</strong>
+                    </p>
+                </div>
+
+                <div class="two-column">
+                    <div style="background: #ebf5fb; padding: 20px; border-radius: 8px; border-left: 5px solid #3498db;">
+                        <h3 style="color: #3498db; margin-bottom: 12px;">📋 使用したM⁶⁵理論の要素</h3>
+                        <ul style="font-size: 14px; line-height: 1.8;">
+                            <li><strong>構造構成主義:</strong>探求志向型の関心(深い理解、学術的探究)の分析</li>
+                            <li><strong>IEEE 42010:</strong>探求型ステークホルダーのConcerns抽出</li>
+                            <li><strong>圏論的翻訳:</strong>理論↔実装の双方向的理解</li>
+                            <li><strong>30次元統合空間:</strong>知識体系の多次元構造化</li>
+                        </ul>
+                    </div>
+
+                    <div style="background: #f3e5f5; padding: 20px; border-radius: 8px; border-left: 5px solid #9b59b6;">
+                        <h3 style="color: #9b59b6; margin-bottom: 12px;">🚀 実用志向型との対比</h3>
+                        <table style="font-size: 13px; margin-top: 10px;">
+                            <tr>
+                                <td style="width: 40%; border: none; background: none;"><strong>実用志向型</strong></td>
+                                <td style="width: 60%; border: none; background: none;"><strong>探求志向型</strong></td>
+                            </tr>
+                            <tr>
+                                <td style="border: none; background: none;">効率最優先</td>
+                                <td style="border: none; background: none;">深さ最優先</td>
+                            </tr>
+                            <tr>
+                                <td style="border: none; background: none;">学習時間最小化</td>
+                                <td style="border: none; background: none;">学習時間最大化</td>
+                            </tr>
+                            <tr>
+                                <td style="border: none; background: none;">実装物</td>
+                                <td style="border: none; background: none;">研究成果</td>
+                            </tr>
+                            <tr>
+                                <td style="border: none; background: none;">ROI評価</td>
+                                <td style="border: none; background: none;">理解度評価</td>
+                            </tr>
+                        </table>
+                        <p style="margin-top: 10px; font-weight: bold;">→ 関心相関性による設計の分岐</p>
+                    </div>
+                </div>
+
+                <h3 style="margin: 20px 0 10px 0; color: #3498db;">📄 同様のアプローチで展開可能</h3>
+                
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                    <div style="background: #fffacd; padding: 15px; border-radius: 8px; text-align: center;">
+                        <p style="font-weight: bold; margin-bottom: 8px;">ステークホルダー3</p>
+                        <p style="font-size: 14px;">創造志向型学習者</p>
+                        <p style="font-size: 12px; margin-top: 5px; color: #7f8c8d;">→ 異分野統合プロジェクト設計</p>
+                    </div>
+                    <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; text-align: center;">
+                        <p style="font-weight: bold; margin-bottom: 8px;">ステークホルダー4</p>
+                        <p style="font-size: 14px;">社会貢献志向型学習者</p>
+                        <p style="font-size: 12px; margin-top: 5px; color: #7f8c8d;">→ 社会課題解決型設計</p>
+                    </div>
+                </div>
+
+                <div style="background: #fff9e6; border: 3px solid #f39c12; padding: 20px; border-radius: 12px; margin-top: 20px;">
+                    <h3 style="color: #d68910; margin-bottom: 12px; font-size: 20px; text-align: center;">
+                        💡 要求開発の新パラダイム
+                    </h3>
+                    <p style="font-size: 16px; text-align: center; line-height: 1.8; color: #2c3e50;">
+                        M⁶⁵理論による<strong>体系的フレームワーク</strong> ×<br>
+                        生成AIによる<strong>生産性向上</strong> ×<br>
+                        構造保存的翻訳による<strong>客観性確保</strong><br>
+                        <br>
+                        = <strong style="color: #3498db; font-size: 20px;">ステークホルダー特化型システム要求開発の確立</strong>
+                    </p>
+                </div>
+            </div>
+            <div class="slide-number">16 / 17</div>
+            <div class="navigation">
+                <button class="nav-button prev" onclick="previousSlide()">← 前へ</button>
+                <span class="slide-indicator">16 / 17</span>
+                <button class="nav-button next" onclick="nextSlide()">次へ →</button>
+            </div>
+        </div>
+
+        <!-- スライド17: 終了 -->
+        <div class="slide title-slide">
+            <div>
+                <h1 class="slide-title">ご清聴ありがとうございました</h1>
+                <p class="slide-subtitle">M⁶⁵理論 × IEEE 42010 × 生成AI<br>要求開発の新時代</p>
+                <p style="margin-top: 60px; font-size: 18px;">SPEC(2) 探求志向型学習システム外部仕様</p>
+                <p style="margin-top: 20px; font-size: 16px;">次のステークホルダー展開へ...</p>
+            </div>
+            <div class="slide-number" style="color: white;">17 / 17</div>
+            <div class="navigation">
+                <button class="nav-button prev" onclick="previousSlide()">← 前へ</button>
+                <span class="slide-indicator">17 / 17</span>
+                <button class="nav-button next" onclick="nextSlide()" disabled>次へ →</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function updateSlide() {
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active');
+                if (index === currentSlide) {
+                    slide.classList.add('active');
+                    slide.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+
+            document.querySelectorAll('.slide-indicator').forEach((indicator, index) => {
+                if (slides[index].classList.contains('active')) {
+                    indicator.innerHTML = `${currentSlide + 1} / ${totalSlides}`;
+                }
+            });
+
+            document.querySelectorAll('.nav-button.prev').forEach(btn => {
+                btn.disabled = currentSlide === 0;
+            });
+            
+            document.querySelectorAll('.nav-button.next').forEach(btn => {
+                btn.disabled = currentSlide === totalSlides - 1;
+            });
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+                updateSlide();
+            }
+        }
+
+        function previousSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlide();
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                previousSlide();
+            }
+        });
+
+        updateSlide();
+    </script>
+</body>
+</html>
